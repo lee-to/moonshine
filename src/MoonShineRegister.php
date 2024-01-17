@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MoonShine;
 
+use MoonShine\Applies\Fields\FileModelApply;
 use MoonShine\Applies\Filters\BelongsToManyModelApply;
 use MoonShine\Applies\Filters\CheckboxModelApply;
 use MoonShine\Applies\Filters\DateModelApply;
@@ -15,6 +16,7 @@ use MoonShine\Applies\Filters\TextModelApply;
 use MoonShine\Fields\Checkbox;
 use MoonShine\Fields\Date;
 use MoonShine\Fields\DateRange;
+use MoonShine\Fields\File;
 use MoonShine\Fields\Json;
 use MoonShine\Fields\Range;
 use MoonShine\Fields\Relationships\BelongsToMany;
@@ -34,17 +36,21 @@ final class MoonShineRegister
             ModelResource::class => [
                 Date::class => DateModelApply::class,
                 Range::class => RangeModelApply::class,
-                    DateRange::class => DateRangeModelApply::class,
-                    BelongsToMany::class => BelongsToManyModelApply::class,
-                    MorphTo::class => MorphToModelApply::class,
-                    Json::class => JsonModelApply::class,
-                    Text::class => TextModelApply::class,
-                    Textarea::class => TextModelApply::class,
-                    Checkbox::class => CheckboxModelApply::class,
-                ],
+                DateRange::class => DateRangeModelApply::class,
+                BelongsToMany::class => BelongsToManyModelApply::class,
+                MorphTo::class => MorphToModelApply::class,
+                Json::class => JsonModelApply::class,
+                Text::class => TextModelApply::class,
+                Textarea::class => TextModelApply::class,
+                Checkbox::class => CheckboxModelApply::class,
             ],
-            'fields' => [],
-        ];
+        ],
+        'fields' => [
+            'all' => [
+                File::class => FileModelApply::class,
+            ],
+        ],
+    ];
 
     public function activeOption(string $activeOption): MoonShineRegister
     {
@@ -76,11 +82,11 @@ final class MoonShineRegister
 
     public function set(string $key, string $value): MoonShineRegister
     {
-        if(! $this->issetOption()) {
+        if (! $this->issetOption()) {
             $this->options[$this->activeOption][$this->activeSection] = [];
         }
 
-        if(! empty($this->options[$this->activeOption][$this->activeSection][$key])) {
+        if (! empty($this->options[$this->activeOption][$this->activeSection][$key])) {
             return $this;
         }
 
@@ -91,16 +97,16 @@ final class MoonShineRegister
 
     public function get(string $key): mixed
     {
-        if(! $this->issetOption()) {
+        if (! $this->issetOption()) {
             return null;
         }
 
-        if(
+        if (
             (! $result = $this->options[$this->activeOption][$this->activeSection][$key] ?? null)
             && class_exists($key)
         ) {
             foreach ($this->options[$this->activeOption][$this->activeSection] as $fieldApply => $applyClasse) {
-                if(is_subclass_of($key, $fieldApply)) {
+                if (is_subclass_of($key, $fieldApply)) {
                     $result = $applyClasse;
 
                     break;

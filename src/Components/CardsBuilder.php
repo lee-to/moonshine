@@ -10,6 +10,7 @@ use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use MoonShine\Fields\Field;
 use MoonShine\Fields\Fields;
+use MoonShine\Router;
 use MoonShine\Traits\HasAsync;
 use MoonShine\Traits\WithColumnSpan;
 use Throwable;
@@ -106,8 +107,7 @@ final class CardsBuilder extends IterableComponent
 
     protected function prepareAsyncUrl(Closure|string|null $asyncUrl = null): Closure|string|null
     {
-        return $asyncUrl ?? fn (): string => moonshineRouter()
-            ->asyncComponent(name: $this->getName());
+        return $asyncUrl ?? Router::getDefaultAsyncComponent($this->getName());
     }
 
     public function componentAttributes(array|Closure $attributes): self

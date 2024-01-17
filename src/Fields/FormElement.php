@@ -13,8 +13,8 @@ use Illuminate\View\ComponentAttributeBag;
 use MoonShine\Contracts\Fields\HasAssets;
 use MoonShine\Contracts\Fields\HasDefaultValue;
 use MoonShine\Contracts\MoonShineRenderable;
-use MoonShine\Contracts\Resources\ResourceContract;
-use MoonShine\Pages\Page;
+use MoonShine\Request;
+use MoonShine\Router;
 use MoonShine\Support\AlpineJs;
 use MoonShine\Support\Condition;
 use MoonShine\Traits\Fields\WithFormElementAttributes;
@@ -23,6 +23,7 @@ use MoonShine\Traits\Makeable;
 use MoonShine\Traits\WithAssets;
 use MoonShine\Traits\WithComponentAttributes;
 use MoonShine\Traits\WithView;
+use RuntimeException;
 
 abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscapedWhenCastToString
 {
@@ -55,6 +56,20 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
     protected ?Closure $requestValueResolver = null;
 
     private View|string|null $cachedRender = null;
+
+    protected static Closure|Request|null $request = null;
+
+    public static function request(Closure|Request $request): void
+    {
+        self::$request = $request;
+    }
+
+    public function getRequest(): Request
+    {
+        throw_if(is_null(self::$request), new RuntimeException('Set request to FormElement'));
+
+        return value(self::$request);
+    }
 
     protected function afterMake(): void
     {
@@ -139,7 +154,7 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
 
     public function hasRequestValue(string|int|null $index = null): bool
     {
-        return request()->has($this->requestNameDot($index));
+        return $this->getRequest()->has($this->requestNameDot($index));
     }
 
     public function requestValueResolver(Closure $resolver): static
@@ -160,7 +175,7 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
             ) ?? false;
         }
 
-        return request($this->requestNameDot($index), $this->defaultIfExists()) ?? false;
+        return $this->getRequest()->get($this->requestNameDot($index), $this->defaultIfExists()) ?? false;
     }
 
     protected function requestNameDot(string|int|null $index = null): string
@@ -248,15 +263,10 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
         ?string $selector = null,
         array $events = [],
         ?string $callback = null,
-        ?Page $page = null,
-        ?ResourceContract $resource = null,
+        array $extra = [],
     ): static {
-        $url = moonshineRouter()->asyncMethodClosure(
-            method: $method,
-            message: $message,
-            params: $params,
-            page: $page,
-            resource: $resource,
+        $url = Router::getDefaultAsyncMethod(
+            ...func_get_args()
         );
 
         return $this->onChangeUrl(

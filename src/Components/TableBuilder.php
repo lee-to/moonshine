@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\View\ComponentAttributeBag;
 use MoonShine\Contracts\Table\TableContract;
 use MoonShine\Fields\Fields;
+use MoonShine\Router;
 use MoonShine\Table\TableRow;
 use MoonShine\Traits\HasAsync;
 use MoonShine\Traits\Table\TableStates;
@@ -96,7 +97,7 @@ final class TableBuilder extends IterableComponent implements TableContract
 
     protected function prepareAsyncUrl(Closure|string|null $asyncUrl = null): Closure|string|null
     {
-        return $asyncUrl ?? fn (): string => moonshineRouter()->asyncTable($this->getName());
+        return $asyncUrl ?? Router::getDefaultAsyncComponent($this->getName());
     }
 
     protected function viewData(): array

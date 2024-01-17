@@ -7,8 +7,7 @@ namespace MoonShine\ActionButtons;
 use Closure;
 use MoonShine\Components\MoonShineComponent;
 use MoonShine\Contracts\Actions\ActionButtonContract;
-use MoonShine\Contracts\Resources\ResourceContract;
-use MoonShine\Pages\Page;
+use MoonShine\Router;
 use MoonShine\Support\AlpineJs;
 use MoonShine\Support\Condition;
 use MoonShine\Traits\InDropdownOrLine;
@@ -119,15 +118,10 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
         ?string $selector = null,
         array $events = [],
         ?string $callback = null,
-        ?Page $page = null,
-        ?ResourceContract $resource = null,
+        array $extra = []
     ): self {
-        $this->url = moonshineRouter()->asyncMethodClosure(
-            method: $method,
-            message: $message,
-            params: $params,
-            page: $page,
-            resource: $resource,
+        $this->url = Router::getDefaultAsyncMethod(
+            ...func_get_args()
         );
 
         return $this->async(

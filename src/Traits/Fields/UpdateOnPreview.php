@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\Exceptions\FieldException;
 use MoonShine\Fields\Text;
+use MoonShine\Router;
 use MoonShine\Support\Condition;
 
 trait UpdateOnPreview
@@ -80,7 +81,7 @@ trait UpdateOnPreview
 
     protected function getDefaultUpdateRoute(): Closure
     {
-        return moonshineRouter()->updateColumn(
+        return Router::getDefaultUpdateColumn(
             $this->getResourceUriForUpdate()
         );
     }

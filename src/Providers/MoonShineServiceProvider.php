@@ -27,14 +27,18 @@ use MoonShine\Commands\MakeResourceCommand;
 use MoonShine\Commands\MakeTypeCastCommand;
 use MoonShine\Commands\MakeUserCommand;
 use MoonShine\Commands\PublishCommand;
+use MoonShine\Fields\FormElement;
 use MoonShine\Http\Middleware\ChangeLocale;
 use MoonShine\Menu\MenuManager;
 use MoonShine\MoonShine;
 use MoonShine\MoonShineRegister;
 use MoonShine\MoonShineRequest;
 use MoonShine\MoonShineRouter;
+use MoonShine\Request;
+use MoonShine\Router;
 use MoonShine\Theme\AssetManager;
 use MoonShine\Theme\ColorManager;
+use Psr\Http\Message\ServerRequestInterface;
 
 class MoonShineServiceProvider extends ServiceProvider
 {
@@ -138,6 +142,36 @@ class MoonShineServiceProvider extends ServiceProvider
         return $this;
     }
 
+    protected function configureUI(): self
+    {
+        FormElement::request(static fn() => new Request(
+            app(ServerRequestInterface::class)
+        ));
+
+        Router::defaultAsyncMethod(static function(...$arguments) {
+            return moonshineRouter()->asyncMethodClosure(
+                ...$arguments
+            );
+        });
+
+        Router::defaultAsyncComponent(static function(...$arguments) {
+            return static fn() => moonshineRouter()
+                ->asyncComponent(...$arguments);
+        });
+
+        Router::defaultReactive(static function () {
+            return static fn() => moonshineRouter()->reactive();
+        });
+
+        Router::defaultUpdateColumn(static function (...$arguments) {
+            return static fn() => moonshineRouter()->updateColumn(
+                ...$arguments
+            );
+        });
+
+        return $this;
+    }
+
     public function register(): void
     {
         $this->registerBindings();
@@ -184,7 +218,8 @@ class MoonShineServiceProvider extends ServiceProvider
         $this
             ->registerBladeDirectives()
             ->registerRouteMiddleware()
-            ->registerAuthConfig();
+            ->registerAuthConfig()
+            ->configureUI();
 
         tap($this->app['events'], function ($event): void {
             $event->listen(RequestHandled::class, function (RequestHandled $event): void {

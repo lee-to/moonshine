@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace MoonShine\Traits\Fields;
 
 use Closure;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Stringable;
-use MoonShine\Exceptions\FieldException;
 use MoonShine\Support\Condition;
 use MoonShine\Traits\WithStorage;
-use Throwable;
 
 trait FileTrait
 {
@@ -33,11 +30,21 @@ trait FileTrait
         return $this;
     }
 
+    public function isKeepOriginalFileName(): bool
+    {
+        return $this->keepOriginalFileName;
+    }
+
     public function customName(Closure $name): static
     {
         $this->customName = $name;
 
         return $this;
+    }
+
+    public function getCustomName(): ?Closure
+    {
+        return $this->customName;
     }
 
     public function allowedExtensions(array $allowedExtensions): static
@@ -105,37 +112,6 @@ trait FileTrait
             ->value();
     }
 
-    /**
-     * @throws Throwable
-     */
-    public function store(UploadedFile $file): string
-    {
-        $extension = $file->extension();
-
-        throw_if(
-            ! $this->isAllowedExtension($extension),
-            new FieldException("$extension not allowed")
-        );
-
-        if ($this->keepOriginalFileName) {
-            return $file->storeAs(
-                $this->getDir(),
-                $file->getClientOriginalName(),
-                $this->parseOptions()
-            );
-        }
-
-        if (is_closure($this->customName)) {
-            return $file->storeAs(
-                $this->getDir(),
-                value($this->customName, $file, $this),
-                $this->parseOptions()
-            );
-        }
-
-        return $file->store($this->getDir(), $this->parseOptions());
-    }
-
     public function isAllowedExtension(string $extension): bool
     {
         return empty($this->getAllowedExtensions())
@@ -145,51 +121,6 @@ trait FileTrait
     public function getAllowedExtensions(): array
     {
         return $this->allowedExtensions;
-    }
-
-    protected function resolveOnApply(): ?Closure
-    {
-        return function ($item) {
-            $requestValue = $this->requestValue();
-
-            if (
-                ! $this->isMultiple()
-                && $this->isDeleteFiles()
-                && $requestValue
-                && $requestValue->hashName()
-            ) {
-                $this->checkAndDelete(
-                    request()->input($this->hiddenOldValuesKey()),
-                    $requestValue->hashName()
-                );
-            }
-
-            $oldValues = request()
-                ->collect($this->hiddenOldValuesKey());
-
-            data_forget($item, 'hidden_' . $this->column());
-
-            $saveValue = $this->isMultiple() ? $oldValues : $oldValues->first();
-
-            if ($requestValue !== false) {
-                if ($this->isMultiple()) {
-                    $paths = [];
-
-                    foreach ($requestValue as $file) {
-                        $paths[] = $this->store($file);
-                    }
-
-                    $saveValue = $saveValue->merge($paths)
-                        ->values()
-                        ->unique()
-                        ->toArray();
-                } else {
-                    $saveValue = $this->store($requestValue);
-                }
-            }
-
-            return data_set($item, $this->column(), $saveValue);
-        };
     }
 
     protected function resolveValue(): mixed
