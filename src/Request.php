@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MoonShine;
 
+use Illuminate\Support\Collection;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class Request
@@ -16,11 +17,7 @@ final class Request
     public function get(string $name, mixed $default = null): mixed
     {
         return data_get(
-            array_merge(
-                $this->request->getQueryParams(),
-                $this->request->getParsedBody(),
-                $this->request->getUploadedFiles(),
-            ),
+            $this->all(),
             $name,
             $default
         );
@@ -29,5 +26,16 @@ final class Request
     public function has(string $name): bool
     {
         return $this->get($name, false) !== false;
+    }
+
+    public function all(): Collection
+    {
+        return collect(
+            array_merge(
+                $this->request->getQueryParams(),
+                $this->request->getParsedBody(),
+                $this->request->getUploadedFiles(),
+            )
+        );
     }
 }

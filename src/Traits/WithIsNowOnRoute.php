@@ -6,6 +6,7 @@ namespace MoonShine\Traits;
 
 use MoonShine\Enums\PageType;
 
+// TODO isolate request
 trait WithIsNowOnRoute
 {
     protected bool $forceNowOnIndex = false;

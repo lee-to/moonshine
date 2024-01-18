@@ -7,6 +7,7 @@ namespace MoonShine\ActionButtons;
 use Closure;
 use MoonShine\Components\MoonShineComponent;
 use MoonShine\Contracts\Actions\ActionButtonContract;
+use MoonShine\DefaultRoutes;
 use MoonShine\Router;
 use MoonShine\Support\AlpineJs;
 use MoonShine\Support\Condition;
@@ -120,9 +121,7 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
         ?string $callback = null,
         array $extra = []
     ): self {
-        $this->url = Router::getDefaultAsyncMethod(
-            ...func_get_args()
-        );
+        $this->url = DefaultRoutes::getDefaultAsyncMethod(...get_defined_vars());
 
         return $this->async(
             selector: $selector,

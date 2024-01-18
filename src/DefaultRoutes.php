@@ -6,7 +6,7 @@ namespace MoonShine;
 
 use Closure;
 
-final class Router
+final class DefaultRoutes
 {
     protected static ?Closure $asyncMethod = null;
 

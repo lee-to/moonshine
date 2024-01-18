@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MoonShine\Traits\Table;
 
 use MoonShine\ActionButtons\ActionButton;
+use MoonShine\Fields\FormElement;
 
 trait TableStates
 {
@@ -199,7 +200,7 @@ trait TableStates
             'sortable' => $this->isSortable(),
             'simple' => $this->isSimple(),
             'searchable' => $this->isSearchable(),
-            'searchValue' => request('search', ''),
+            'searchValue' => FormElement::getRequest()->get('search', ''),
         ];
     }
 }

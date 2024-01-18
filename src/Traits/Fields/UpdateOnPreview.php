@@ -7,6 +7,7 @@ namespace MoonShine\Traits\Fields;
 use Closure;
 use Illuminate\Contracts\View\View;
 use MoonShine\Contracts\Resources\ResourceContract;
+use MoonShine\DefaultRoutes;
 use MoonShine\Exceptions\FieldException;
 use MoonShine\Fields\Text;
 use MoonShine\Router;
@@ -50,6 +51,7 @@ trait UpdateOnPreview
 
         $this->url = $url;
 
+        // TODO isolate request
         $resource ??= moonshineRequest()->getResource();
 
         if (is_null($resource) && is_null($url)) {
@@ -81,7 +83,7 @@ trait UpdateOnPreview
 
     protected function getDefaultUpdateRoute(): Closure
     {
-        return Router::getDefaultUpdateColumn(
+        return DefaultRoutes::getDefaultUpdateColumn(
             $this->getResourceUriForUpdate()
         );
     }

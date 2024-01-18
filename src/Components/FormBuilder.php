@@ -7,6 +7,7 @@ namespace MoonShine\Components;
 use Closure;
 use Illuminate\View\ComponentAttributeBag;
 use JsonException;
+use MoonShine\DefaultRoutes;
 use MoonShine\Enums\JsEvent;
 use MoonShine\Fields\Field;
 use MoonShine\Fields\Fields;
@@ -104,8 +105,8 @@ final class FormBuilder extends RowComponent
         ?string $callback = null,
         array $extra = [],
     ): self {
-        $asyncUrl = Router::getDefaultAsyncMethod(
-            ...func_get_args()
+        $asyncUrl = DefaultRoutes::getDefaultAsyncMethod(
+            ...get_defined_vars()
         );
 
         return $this->action(value($asyncUrl))->async(
@@ -271,7 +272,7 @@ final class FormBuilder extends RowComponent
         $xInit = json_encode([
             'whenFields' => array_values($onlyFields->whenFieldsConditions()->toArray()),
             'reactiveUrl' => $reactiveFields->isNotEmpty()
-                ? value(Router::getDefaultReactive())
+                ? value(DefaultRoutes::getDefaultReactive())
                 : '',
         ], JSON_THROW_ON_ERROR);
 

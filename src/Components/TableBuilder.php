@@ -10,7 +10,9 @@ use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\View\ComponentAttributeBag;
 use MoonShine\Contracts\Table\TableContract;
+use MoonShine\DefaultRoutes;
 use MoonShine\Fields\Fields;
+use MoonShine\Fields\FormElement;
 use MoonShine\Router;
 use MoonShine\Table\TableRow;
 use MoonShine\Traits\HasAsync;
@@ -97,14 +99,14 @@ final class TableBuilder extends IterableComponent implements TableContract
 
     protected function prepareAsyncUrl(Closure|string|null $asyncUrl = null): Closure|string|null
     {
-        return $asyncUrl ?? Router::getDefaultAsyncComponent($this->getName());
+        return $asyncUrl ?? DefaultRoutes::getDefaultAsyncComponent($this->getName());
     }
 
     protected function viewData(): array
     {
         if ($this->isAsync() && $this->hasPaginator()) {
             $this->getPaginator()
-                ?->appends(request()->except('page'))
+                ?->appends(FormElement::getRequest()->all()->except('page'))
                 ?->setPath($this->prepareAsyncUrlFromPaginator());
         }
 

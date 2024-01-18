@@ -27,6 +27,7 @@ use MoonShine\Commands\MakeResourceCommand;
 use MoonShine\Commands\MakeTypeCastCommand;
 use MoonShine\Commands\MakeUserCommand;
 use MoonShine\Commands\PublishCommand;
+use MoonShine\DefaultRoutes;
 use MoonShine\Fields\FormElement;
 use MoonShine\Http\Middleware\ChangeLocale;
 use MoonShine\Menu\MenuManager;
@@ -148,25 +149,31 @@ class MoonShineServiceProvider extends ServiceProvider
             app(ServerRequestInterface::class)
         ));
 
-        Router::defaultAsyncMethod(static function(...$arguments) {
+        DefaultRoutes::defaultAsyncMethod(static function(...$arguments) {
             return moonshineRouter()->asyncMethodClosure(
-                ...$arguments
+                $arguments['method'],
+                $arguments['message'] ?? null,
+                $arguments['params'] ?? [],
+                $arguments['extra']['page'] ?? null,
+                $arguments['extra']['resource'] ?? null,
             );
         });
 
-        Router::defaultAsyncComponent(static function(...$arguments) {
+        DefaultRoutes::defaultAsyncComponent(static function(...$arguments) {
             return static fn() => moonshineRouter()
-                ->asyncComponent(...$arguments);
+                ->asyncComponent(
+                    $arguments['name'],
+                    $arguments['additionally'] ?? [],
+                );
         });
 
-        Router::defaultReactive(static function () {
+        DefaultRoutes::defaultReactive(static function () {
             return static fn() => moonshineRouter()->reactive();
         });
 
-        Router::defaultUpdateColumn(static function (...$arguments) {
-            return static fn() => moonshineRouter()->updateColumn(
-                ...$arguments
-            );
+        DefaultRoutes::defaultUpdateColumn(static function ($resourceUri) {
+            return static fn() => moonshineRouter()
+                ->updateColumn($resourceUri);
         });
 
         return $this;

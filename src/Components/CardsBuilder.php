@@ -8,8 +8,10 @@ use Closure;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Collection;
+use MoonShine\DefaultRoutes;
 use MoonShine\Fields\Field;
 use MoonShine\Fields\Fields;
+use MoonShine\Fields\FormElement;
 use MoonShine\Router;
 use MoonShine\Traits\HasAsync;
 use MoonShine\Traits\WithColumnSpan;
@@ -107,7 +109,7 @@ final class CardsBuilder extends IterableComponent
 
     protected function prepareAsyncUrl(Closure|string|null $asyncUrl = null): Closure|string|null
     {
-        return $asyncUrl ?? Router::getDefaultAsyncComponent($this->getName());
+        return $asyncUrl ?? DefaultRoutes::getDefaultAsyncComponent($this->getName());
     }
 
     public function componentAttributes(array|Closure $attributes): self
@@ -181,7 +183,7 @@ final class CardsBuilder extends IterableComponent
     {
         if ($this->isAsync() && $this->hasPaginator()) {
             $this->getPaginator()
-                ?->appends(request()->except('page'))
+                ?->appends(FormElement::getRequest()->all()->except('page'))
                 ?->setPath($this->prepareAsyncUrlFromPaginator());
         }
 
