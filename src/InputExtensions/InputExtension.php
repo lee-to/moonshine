@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use MoonShine\Traits\WithComponentAttributes;
 use MoonShine\Traits\WithView;
+use MoonShine\ViewRenderer;
 
 abstract class InputExtension
 {
@@ -47,7 +48,7 @@ abstract class InputExtension
                 $this->getView()
             );
 
-        return view($view, [
+        return ViewRenderer::render($view, [
             'extension' => $this,
         ]);
     }

@@ -183,7 +183,7 @@ final class CardsBuilder extends IterableComponent
     {
         if ($this->isAsync() && $this->hasPaginator()) {
             $this->getPaginator()
-                ?->appends(FormElement::getRequest()->all()->except('page'))
+                ?->appends((array) FormElement::getRequest()->all()->except('page'))
                 ?->setPath($this->prepareAsyncUrlFromPaginator());
         }
 

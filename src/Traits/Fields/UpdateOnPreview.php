@@ -52,6 +52,8 @@ trait UpdateOnPreview
         $this->url = $url;
 
         // TODO isolate request
+        // Вынести в DefaultRoutes
+        // Свойства вынести в HasMany
         $resource ??= moonshineRequest()->getResource();
 
         if (is_null($resource) && is_null($url)) {

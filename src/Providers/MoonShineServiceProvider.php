@@ -39,6 +39,7 @@ use MoonShine\Request;
 use MoonShine\Router;
 use MoonShine\Theme\AssetManager;
 use MoonShine\Theme\ColorManager;
+use MoonShine\ViewRenderer;
 use Psr\Http\Message\ServerRequestInterface;
 
 class MoonShineServiceProvider extends ServiceProvider
@@ -149,6 +150,10 @@ class MoonShineServiceProvider extends ServiceProvider
             app(ServerRequestInterface::class)
         ));
 
+        ViewRenderer::set(
+            static fn(string $path, array $data = []) => view($path, $data)
+        );
+
         DefaultRoutes::defaultAsyncMethod(static function(...$arguments) {
             return moonshineRouter()->asyncMethodClosure(
                 $arguments['method'],
@@ -172,6 +177,7 @@ class MoonShineServiceProvider extends ServiceProvider
         });
 
         DefaultRoutes::defaultUpdateColumn(static function ($resourceUri) {
+            // TODO updateOnPreview more logic form trait to here
             return static fn() => moonshineRouter()
                 ->updateColumn($resourceUri);
         });

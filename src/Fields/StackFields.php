@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use MoonShine\Contracts\Fields\FieldsWrapper;
 use MoonShine\Contracts\Fields\HasFields;
 use MoonShine\Traits\WithFields;
+use MoonShine\ViewRenderer;
 use Throwable;
 
 class StackFields extends Field implements HasFields, FieldsWrapper
@@ -73,7 +74,7 @@ class StackFields extends Field implements HasFields, FieldsWrapper
 
     protected function resolvePreview(): View|string
     {
-        return view($this->getView(), [
+        return ViewRenderer::render($this->getView(), [
             'element' => $this,
             'indexView' => true,
         ]);

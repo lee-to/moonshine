@@ -24,6 +24,7 @@ use MoonShine\Traits\Makeable;
 use MoonShine\Traits\WithAssets;
 use MoonShine\Traits\WithComponentAttributes;
 use MoonShine\Traits\WithView;
+use MoonShine\ViewRenderer;
 use RuntimeException;
 
 abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscapedWhenCastToString
@@ -339,7 +340,7 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
             return $this->toValue();
         }
 
-        return $this->cachedRender = view($this->getView(), [
+        return $this->cachedRender = ViewRenderer::render($this->getView(), [
             'element' => $this,
         ]);
     }

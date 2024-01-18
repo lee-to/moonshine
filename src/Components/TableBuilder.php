@@ -106,7 +106,7 @@ final class TableBuilder extends IterableComponent implements TableContract
     {
         if ($this->isAsync() && $this->hasPaginator()) {
             $this->getPaginator()
-                ?->appends(FormElement::getRequest()->all()->except('page'))
+                ?->appends((array) FormElement::getRequest()->all()->except('page'))
                 ?->setPath($this->prepareAsyncUrlFromPaginator());
         }
 
