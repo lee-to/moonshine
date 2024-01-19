@@ -20,6 +20,7 @@ use MoonShine\Support\AlpineJs;
 use MoonShine\Support\Condition;
 use MoonShine\Traits\Fields\WithFormElementAttributes;
 use MoonShine\Traits\HasCanSee;
+use MoonShine\Traits\HasMeta;
 use MoonShine\Traits\Makeable;
 use MoonShine\Traits\WithAssets;
 use MoonShine\Traits\WithComponentAttributes;
@@ -35,6 +36,7 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
     use WithView;
     use WithAssets;
     use HasCanSee;
+    use HasMeta;
     use Conditionable;
 
     protected ?FormElement $parent = null;

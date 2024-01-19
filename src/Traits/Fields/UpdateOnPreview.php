@@ -6,11 +6,9 @@ namespace MoonShine\Traits\Fields;
 
 use Closure;
 use Illuminate\Contracts\View\View;
-use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\DefaultRoutes;
 use MoonShine\Exceptions\FieldException;
 use MoonShine\Fields\Text;
-use MoonShine\Router;
 use MoonShine\Support\Condition;
 
 trait UpdateOnPreview
@@ -20,10 +18,6 @@ trait UpdateOnPreview
     protected ?Closure $updateOnPreviewUrl = null;
 
     protected ?Closure $url = null;
-
-    protected ?string $updateColumnResourceUri = null;
-
-    protected ?string $updateColumnPageUri = null;
 
     /**
      * @throws FieldException
@@ -40,7 +34,7 @@ trait UpdateOnPreview
      */
     public function updateOnPreview(
         ?Closure $url = null,
-        ?ResourceContract $resource = null,
+        array $extra = [],
         mixed $condition = null
     ): static {
         $this->updateOnPreview = Condition::boolean($condition, true);
@@ -51,26 +45,8 @@ trait UpdateOnPreview
 
         $this->url = $url;
 
-        // TODO isolate request
-        // Вынести в DefaultRoutes
-        // Свойства вынести в HasMany
-        $resource ??= moonshineRequest()->getResource();
-
-        if (is_null($resource) && is_null($url)) {
-            throw new FieldException('updateOnPreview must accept either $resource or $url parameters');
-        }
-
-        if (! is_null($resource)) {
-            if (is_null($resource->formPage())) {
-                throw new FieldException('To use the updateOnPreview method, you must set FormPage to the Resource');
-            }
-
-            $this->updateColumnResourceUri = $resource->uriKey();
-            $this->updateColumnPageUri = $resource->formPage()->uriKey();
-        }
-
         return $this->setUpdateOnPreviewUrl(
-            $this->getUrl() ?? $this->getDefaultUpdateRoute()
+            $this->getUrl() ?? $this->getDefaultUpdateRoute($extra)
         );
     }
 
@@ -83,11 +59,9 @@ trait UpdateOnPreview
         );
     }
 
-    protected function getDefaultUpdateRoute(): Closure
+    protected function getDefaultUpdateRoute(array $extra = []): Closure
     {
-        return DefaultRoutes::getDefaultUpdateColumn(
-            $this->getResourceUriForUpdate()
-        );
+        return DefaultRoutes::getDefaultUpdateColumn($this, $extra);
     }
 
     public function isUpdateOnPreview(): bool
@@ -98,16 +72,6 @@ trait UpdateOnPreview
     public function getUrl(): ?Closure
     {
         return $this->url;
-    }
-
-    public function getResourceUriForUpdate(): ?string
-    {
-        return $this->updateColumnResourceUri;
-    }
-
-    public function getPageUriForUpdate(): ?string
-    {
-        return $this->updateColumnPageUri;
     }
 
     protected function onChangeCondition(): bool

@@ -12,9 +12,5 @@ interface HasUpdateOnPreview
 
     public function getUrl(): ?Closure;
 
-    public function getResourceUriForUpdate(): ?string;
-
-    public function getPageUriForUpdate(): ?string;
-
     public function setUpdateOnPreviewUrl(Closure $url): static;
 }

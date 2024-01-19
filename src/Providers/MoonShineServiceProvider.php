@@ -28,6 +28,8 @@ use MoonShine\Commands\MakeTypeCastCommand;
 use MoonShine\Commands\MakeUserCommand;
 use MoonShine\Commands\PublishCommand;
 use MoonShine\DefaultRoutes;
+use MoonShine\Exceptions\FieldException;
+use MoonShine\Fields\Field;
 use MoonShine\Fields\FormElement;
 use MoonShine\Http\Middleware\ChangeLocale;
 use MoonShine\Menu\MenuManager;
@@ -176,10 +178,26 @@ class MoonShineServiceProvider extends ServiceProvider
             return static fn() => moonshineRouter()->reactive();
         });
 
-        DefaultRoutes::defaultUpdateColumn(static function ($resourceUri) {
-            // TODO updateOnPreview more logic form trait to here
-            return static fn() => moonshineRouter()
-                ->updateColumn($resourceUri);
+        DefaultRoutes::defaultUpdateColumn(static function (Field $field, array $extra = []) {
+            $resource = $extra['resource'] ?? moonshineRequest()->getResource();
+
+            if (is_null($resource) && is_null($field->getUrl())) {
+                throw new FieldException('updateOnPreview must accept either $resource or $url parameters');
+            }
+
+            if (! is_null($resource)) {
+                if (is_null($resource->formPage())) {
+                    throw new FieldException('To use the updateOnPreview method, you must set FormPage to the Resource');
+                }
+
+                $field
+                    ->setMeta('updateColumnResourceUri', $resource->uriKey())
+                    ->setMeta('updateColumnPageUri', $resource->formPage()?->uriKey());
+            }
+
+            return moonshineRouter()->updateColumn(
+                $resource->uriKey(),
+            );
         });
 
         return $this;
