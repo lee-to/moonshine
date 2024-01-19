@@ -146,7 +146,7 @@ it('resource update column', function () {
 
     $resource = TestResourceBuilder::new(Item::class);
 
-    $field = Switcher::make('Active')->default(1)->updateOnPreview(resource: $resource);
+    $field = Switcher::make('Active')->default(1)->updateOnPreview(extra: ['resource' => $resource]);
 
     $resource->setTestFields([
         ...(new TestItemResource())->fields(),

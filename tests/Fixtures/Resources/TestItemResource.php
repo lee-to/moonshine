@@ -50,7 +50,7 @@ class TestItemResource extends ModelResource
                 HasMany::make('Comments title', 'comments', resource: new TestCommentResource())->fields([
                     ID::make()->sortable(),
                     Text::make('Comment title', 'content')->sortable(),
-                    Switcher::make('Active title', 'active')->updateOnPreview(resource: $this),
+                    Switcher::make('Active title', 'active')->updateOnPreview(extra: ['resource' => $this]),
                 ]),
 
                 MorphMany::make('Images title', 'images', resource: new TestImageResource())
