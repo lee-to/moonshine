@@ -163,7 +163,7 @@ class HasMany extends ModelRelationField implements HasFields
     /**
      * @throws Throwable
      */
-    public function preparedClonedFields()
+    public function preparedClonedFields(): Fields
     {
         $fields = $this->preparedFields();
 
@@ -351,6 +351,17 @@ class HasMany extends ModelRelationField implements HasFields
         }
 
         return $this->isOnlyLink() ? $this->linkValue() : $this->tableValue();
+    }
+
+    /**
+     * @throws Throwable
+     */
+    protected function viewData(): array
+    {
+        return [
+            ...parent::viewData(),
+            'table' => $this->resolveValue()
+        ];
     }
 
     protected function resolveOnApply(): ?Closure

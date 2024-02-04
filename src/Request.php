@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace MoonShine;
 
+use Closure;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class Request
 {
     public function __construct(
-        protected ServerRequestInterface $request
+        protected ServerRequestInterface $request,
+        protected ?Closure $old = null
     ) {
     }
 
@@ -21,6 +23,11 @@ final class Request
             $name,
             $default
         );
+    }
+
+    public function old(string $name, mixed $default = null): mixed
+    {
+        return value($this->old, $name, $default);
     }
 
     public function has(string $name): bool

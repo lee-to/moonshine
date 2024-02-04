@@ -149,10 +149,12 @@ class MoonShineServiceProvider extends ServiceProvider
     protected function configureUI(): self
     {
         FormElement::request(static fn() => new Request(
-            app(ServerRequestInterface::class)
+            request: app(ServerRequestInterface::class),
+            old: fn (string $name, mixed $default) => app('session')
+                ->getOldInput($name, $default)
         ));
 
-        ViewRenderer::set(
+        ViewRenderer::setRenderer(
             static fn(string $path, array $data = []) => view($path, $data)
         );
 

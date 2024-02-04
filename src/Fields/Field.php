@@ -226,9 +226,7 @@ abstract class Field extends FormElement
     {
         $this->previewMode = false;
 
-        $old = old($this->nameDot());
-
-        if ($withOld && $old) {
+        if ($withOld && $old = self::getRequest()->old($this->nameDot())) {
             return $old;
         }
 

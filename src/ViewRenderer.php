@@ -10,9 +10,9 @@ final class ViewRenderer
 {
     protected static Closure $renderer;
 
-    public static function set(Closure $closure): void
+    public static function setRenderer(Closure $renderer): void
     {
-        self::$renderer = $closure;
+        self::$renderer = $renderer;
     }
 
     public static function render(string $path, array $data = []): mixed

@@ -262,6 +262,17 @@ class BelongsToMany extends ModelRelationField implements
     /**
      * @throws Throwable
      */
+    protected function viewData(): array
+    {
+        return [
+            ...parent::viewData(),
+            'table' => $this->resolveValue()
+        ];
+    }
+
+    /**
+     * @throws Throwable
+     */
     protected function resolveValue(): mixed
     {
         $titleColumn = $this->getResourceColumn();

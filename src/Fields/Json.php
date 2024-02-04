@@ -493,6 +493,36 @@ class Json extends Field implements
     /**
      * @throws Throwable
      */
+    public function getTable(): TableBuilder
+    {
+        return $this->resolveValue()
+            ->editable()
+            ->reindex()
+            ->when(
+                $this->isCreatable(),
+                fn(TableBuilder $table) => $table->creatable(
+                    limit: $this->creatableLimit(),
+                    button: $this->creatableButton()
+                )
+            )
+            ->buttons($this->getButtons())
+            ->simple();
+    }
+
+    /**
+     * @throws Throwable
+     */
+    protected function viewData(): array
+    {
+        return [
+            ...parent::viewData(),
+            'table' => $this->getTable(),
+        ];
+    }
+
+    /**
+     * @throws Throwable
+     */
     protected function resolveAfterApply(mixed $data): mixed
     {
         if ($this->isAsRelation()) {

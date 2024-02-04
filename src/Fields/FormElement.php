@@ -324,7 +324,12 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
         return true;
     }
 
-    public function render(): View|Closure|string
+    protected function viewData(): array
+    {
+        return [];
+    }
+
+    public function render()
     {
         if (! is_null($this->cachedRender)) {
             return $this->cachedRender;
@@ -344,6 +349,8 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
 
         return $this->cachedRender = ViewRenderer::render($this->getView(), [
             'element' => $this,
+            'value' => $this->value(),
+            ...$this->viewData()
         ]);
     }
 
