@@ -7,14 +7,15 @@ use MoonShine\Components\ActionGroup;
 use MoonShine\Components\FormBuilder;
 use MoonShine\Contracts\MoonShineRenderable;
 use MoonShine\Decorations\Divider;
-use MoonShine\Decorations\Flex;
 use MoonShine\Decorations\Fragment;
 use MoonShine\Decorations\LineBreak;
+use MoonShine\Enums\JsEvent;
 use MoonShine\Enums\PageType;
 use MoonShine\Fields\Fields;
 use MoonShine\Fields\Hidden;
 use MoonShine\Pages\Page;
 use MoonShine\Resources\ModelResource;
+use MoonShine\Support\AlpineJs;
 use Throwable;
 
 /**
@@ -81,13 +82,9 @@ class FormPage extends Page
         $item = $this->getResource()->getItem();
 
         if ($item?->exists) {
-            $components[] = Flex::make([
-                ActionGroup::make($this->getResource()->getFormItemButtons())
-                    ->setItem($item)
-                ,
-            ])
-                ->customAttributes(['class' => 'mb-4'])
-                ->justifyAlign('end');
+            $components[] = ActionGroup::make($this->getResource()->getFormItemButtons())
+                ->setItem($item)
+                ->customAttributes(['class' => 'mb-4']);
         }
 
         return $components;
@@ -125,7 +122,10 @@ class FormPage extends Page
             ->when(
                 $isAsync,
                 fn (FormBuilder $formBuilder): FormBuilder => $formBuilder
-                    ->async(asyncEvents: $resource->listEventName(request('_component_name', 'default')))
+                    ->async(asyncEvents: [
+                        $resource->listEventName(request('_component_name', 'default')),
+                        AlpineJs::event(JsEvent::FORM_RESET, 'crud'),
+                    ])
             )
             ->when(
                 $resource->isPrecognitive() || (moonshineRequest()->isFragmentLoad('crud-form') && ! $isAsync),

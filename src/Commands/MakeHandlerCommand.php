@@ -10,6 +10,9 @@ use function Laravel\Prompts\{outro, text};
 
 use MoonShine\MoonShine;
 
+use Symfony\Component\Console\Attribute\AsCommand;
+
+#[AsCommand(name: 'moonshine:handler')]
 class MakeHandlerCommand extends MoonShineCommand
 {
     protected $signature = 'moonshine:handler {className?}';

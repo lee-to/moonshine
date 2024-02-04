@@ -6,14 +6,13 @@ namespace MoonShine\Buttons;
 
 use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Components\FormBuilder;
-use MoonShine\Fields\HiddenIds;
 use MoonShine\Resources\ModelResource;
 
 final class MassDeleteButton
 {
     public static function for(
         ModelResource $resource,
-        ?string $componentName = null,
+        string $componentName = null,
         string $redirectAfterDelete = '',
         bool $isAsync = false,
     ): ActionButton {
@@ -27,10 +26,8 @@ final class MassDeleteButton
             '',
             url: $action
         )
+            ->bulk($componentName ?? $resource->listComponentName())
             ->withConfirm(
-                fields: fn (): array => [
-                    HiddenIds::make(),
-                ],
                 method: 'DELETE',
                 formBuilder: fn (FormBuilder $formBuilder) => $formBuilder->when(
                     $isAsync || $resource->isAsync(),
@@ -45,7 +42,6 @@ final class MassDeleteButton
                 fn (): bool => in_array('massDelete', $resource->getActiveActions())
                     && $resource->can('massDelete')
             )
-            ->bulk()
             ->secondary()
             ->icon('heroicons.outline.trash')
             ->showInLine();

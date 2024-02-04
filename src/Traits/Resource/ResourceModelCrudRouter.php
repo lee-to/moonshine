@@ -12,6 +12,7 @@ use MoonShine\Enums\PageType;
 use MoonShine\Pages\Page;
 
 /**
+ * @template TModel of Model
  * @mixin ResourceContract
  */
 trait ResourceModelCrudRouter
@@ -28,6 +29,11 @@ trait ResourceModelCrudRouter
         )->value();
     }
 
+    /**
+     * @param string|null $name
+     * @param TModel|int|string|null $key
+     *
+     */
     public function route(
         string $name = null,
         Model|int|string|null $key = null,
@@ -41,7 +47,7 @@ trait ResourceModelCrudRouter
 
         return moonshineRouter()->to(
             $name,
-            $key ? array_merge(['resourceItem' => $key], $query) : $query
+            filled($key) ? array_merge(['resourceItem' => $key], $query) : $query
         );
     }
 
@@ -60,6 +66,11 @@ trait ResourceModelCrudRouter
         return $this->pageUrl($this->indexPage(), params: $params, fragment: $fragment);
     }
 
+    /**
+     * @param TModel|int|string|null $model
+     * @param string|null $fragment
+     *
+     */
     public function formPageUrl(
         Model|int|string|null $model = null,
         array $params = [],
@@ -70,11 +81,16 @@ trait ResourceModelCrudRouter
             params: array_filter([
                 ...$params,
                 ...['resourceItem' => $model instanceof Model ? $model->getKey() : $model],
-            ]),
+            ], static fn ($value) => filled($value)),
             fragment: $fragment
         );
     }
 
+    /**
+     * @param TModel|int|string $model
+     * @param string|null $fragment
+     *
+     */
     public function detailPageUrl(
         Model|int|string $model,
         array $params = [],
@@ -85,11 +101,15 @@ trait ResourceModelCrudRouter
             params: array_filter([
                 ...$params,
                 ...['resourceItem' => $model instanceof Model ? $model->getKey() : $model],
-            ]),
+            ], static fn ($value) => filled($value)),
             fragment: $fragment
         );
     }
 
+    /**
+     * @param TModel|int|string|null $model
+     *
+     */
     public function fragmentLoadUrl(
         string $fragment,
         Page $page,
@@ -101,7 +121,7 @@ trait ResourceModelCrudRouter
             params: array_filter([
                 ...$params,
                 ...['resourceItem' => $model instanceof Model ? $model->getKey() : $model],
-            ]),
+            ], static fn ($value) => filled($value)),
             fragment: $fragment
         );
     }

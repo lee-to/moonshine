@@ -1,12 +1,18 @@
 export function getInputs(formId) {
   const inputs = {}
   document.querySelectorAll('#' + formId + ' [name]').forEach(element => {
-    inputs[inputFieldName(element.getAttribute('name'))] = inputGeValue(element)
+    inputs[inputFieldName(element.getAttribute('name'))] = {}
+
+    inputs[inputFieldName(element.getAttribute('name'))].value = inputGeValue(element)
+    inputs[inputFieldName(element.getAttribute('name'))].type = element.getAttribute('type')
   })
 
   document.querySelectorAll('#' + formId + ' [data-field-block]').forEach(element => {
-    inputs[inputFieldName(element.getAttribute('data-field-block'))] =
+    inputs[inputFieldName(element.getAttribute('data-field-block'))] = {}
+
+    inputs[inputFieldName(element.getAttribute('data-field-block'))].value =
       element.getAttribute('data-field-block')
+    inputs[inputFieldName(element.getAttribute('data-field-block'))].type = 'text'
   })
 
   return inputs
@@ -14,25 +20,36 @@ export function getInputs(formId) {
 
 export function showWhenChange(fieldName, formId) {
   fieldName = inputFieldName(fieldName)
+
   this.whenFields.forEach(field => {
-    if (fieldName != field.changeField) {
+    if (fieldName !== field.changeField) {
       return
     }
-    this.showWhenVisibilityChange(fieldName, this.getInputs(formId), field, formId)
+
+    let showField = field.showField
+
+    let showWhenConditions = []
+
+    this.whenFields.forEach(item => {
+      if (showField !== item.showField) {
+        return
+      }
+      showWhenConditions.push(item)
+    })
+
+    this.showWhenVisibilityChange(showWhenConditions, showField, this.getInputs(formId), formId)
   })
 }
 
-export function showWhenVisibilityChange(fieldName, inputs, field, formId) {
-  if (inputs[field.showField] === undefined) {
+export function showWhenVisibilityChange(showWhenConditions, fieldName, inputs, formId) {
+  if (showWhenConditions.length === 0) {
     return
   }
 
-  let inputElement = document.querySelector('#' + formId + ' [name=' + field.showField + ']')
+  let inputElement = document.querySelector('#' + formId + ' [name=' + fieldName + ']')
 
   if (inputElement === null) {
-    inputElement = document.querySelector(
-      '#' + formId + ' [data-field-block=' + field.showField + ']',
-    )
+    inputElement = document.querySelector('#' + formId + ' [data-field-block=' + fieldName + ']')
   }
 
   if (inputElement === null) {
@@ -48,60 +65,91 @@ export function showWhenVisibilityChange(fieldName, inputs, field, formId) {
     fieldContainer = inputElement
   }
 
+  let countTrueConditions = 0
+
+  showWhenConditions.forEach(field => {
+    if (this.isValidateShow(fieldName, inputs, field)) {
+      countTrueConditions++
+    }
+  })
+
+  if (countTrueConditions === showWhenConditions.length) {
+    fieldContainer.style.removeProperty('display')
+  } else {
+    fieldContainer.style.display = 'none'
+  }
+}
+
+export function isValidateShow(fieldName, inputs, field) {
   let validateShow = false
+
+  let valueInput = inputs[field.changeField].value
+  let valueField = field.value
+
+  const inputType = inputs[field.changeField].type
+
+  if (inputType === 'number') {
+    valueInput = parseFloat(valueInput)
+    valueField = parseFloat(valueField)
+  } else if (inputType === 'date' || inputType === 'datetime-local') {
+    if (inputType === 'date') {
+      valueInput = valueInput + ' 00:00:00'
+    }
+    valueInput = new Date(valueInput).getTime()
+
+    if (!Array.isArray(valueField)) {
+      valueField = new Date(valueField).getTime()
+    }
+  }
 
   switch (field.operator) {
     case '=':
-      validateShow = inputs[field.changeField] == field.value
+      validateShow = valueInput == valueField
       break
     case '!=':
-      validateShow = inputs[field.changeField] != field.value
+      validateShow = valueInput != valueField
       break
     case '>':
-      validateShow = inputs[field.changeField] > field.value
+      validateShow = valueInput > valueField
       break
     case '<':
-      validateShow = inputs[field.changeField] < field.value
+      validateShow = valueInput < valueField
       break
     case '>=':
-      validateShow = inputs[field.changeField] >= field.value
+      validateShow = valueInput >= valueField
       break
     case '<=':
-      validateShow = inputs[field.changeField] <= field.value
+      validateShow = valueInput <= valueField
       break
     case 'in':
-      if (Array.isArray(field.value) && Array.isArray(inputs[field.changeField])) {
-        for (let i = 0; i < field.value.length; i++) {
-          if (inputs[field.changeField].includes(field.value[i])) {
+      if (Array.isArray(valueInput) && Array.isArray(valueField)) {
+        for (let i = 0; i < valueField.length; i++) {
+          if (valueInput.includes(valueField[i])) {
             validateShow = true
             break
           }
         }
       } else {
-        validateShow = field.value.includes(inputs[field.changeField])
+        validateShow = valueField.includes(valueInput)
       }
       break
     case 'not in':
-      if (Array.isArray(field.value) && Array.isArray(inputs[field.changeField])) {
+      if (Array.isArray(valueInput) && Array.isArray(valueField)) {
         let includes = false
-        for (let i = 0; i < field.value.length; i++) {
-          if (inputs[field.changeField].includes(field.value[i])) {
+        for (let i = 0; i < valueField.length; i++) {
+          if (valueInput.includes(valueField[i])) {
             includes = true
             break
           }
         }
         validateShow = !includes
       } else {
-        validateShow = !field.value.includes(inputs[field.changeField])
+        validateShow = !valueField.includes(valueInput)
       }
       break
   }
 
-  if (validateShow) {
-    fieldContainer.style.removeProperty('display')
-  } else {
-    fieldContainer.style.display = 'none'
-  }
+  return validateShow
 }
 
 export function inputFieldName(inputName) {

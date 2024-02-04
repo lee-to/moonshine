@@ -10,6 +10,9 @@ use function Laravel\Prompts\{error, info, password, text};
 
 use MoonShine\MoonShineAuth;
 
+use Symfony\Component\Console\Attribute\AsCommand;
+
+#[AsCommand(name: 'moonshine:user')]
 class MakeUserCommand extends MoonShineCommand
 {
     protected $signature = 'moonshine:user {--u|username=} {--N|name=} {--p|password=}';

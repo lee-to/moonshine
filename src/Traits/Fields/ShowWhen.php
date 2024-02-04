@@ -33,14 +33,6 @@ trait ShowWhen
         return $this->showWhenState;
     }
 
-    /**
-     * @return array {
-     *               showField: string,
-     *               changeField: string,
-     *               operator: mixed,
-     *               value: mixed,
-     *               }
-     */
     public function showWhenCondition(): array
     {
         return $this->showWhenCondition;
@@ -55,7 +47,7 @@ trait ShowWhen
 
         $this->showWhenState = true;
 
-        $this->showWhenCondition = [
+        $this->showWhenCondition[] = [
             'showField' => str_replace('[]', '', $this->column()),
             'changeField' => $this->dotNestedToName($column),
             'operator' => $operator,
@@ -63,6 +55,31 @@ trait ShowWhen
         ];
 
         return $this;
+    }
+
+    public function showWhenDate(
+        string $column,
+        mixed $operator = null,
+        mixed $value = null
+    ): static {
+        if(func_num_args() === 2) {
+            $value = $operator;
+        }
+
+        if(is_array($value)) {
+            foreach ($value as $key => $item) {
+                // Casting to Date type for javascript
+                $value[$key] = strtotime((string) $item) * 1000;
+            }
+        } else {
+            $value = strtotime((string) $value) * 1000;
+        }
+
+        if(func_num_args() === 2) {
+            return $this->showWhen($column, $value);
+        }
+
+        return $this->showWhen($column, $operator, $value);
     }
 
     protected function makeCondition(

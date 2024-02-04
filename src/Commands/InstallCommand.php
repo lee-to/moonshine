@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\File;
 use function Laravel\Prompts\{confirm, intro, outro, spin, warning};
 
 use MoonShine\MoonShine;
-
 use MoonShine\Providers\MoonShineServiceProvider;
 
+use Symfony\Component\Console\Attribute\AsCommand;
+
+#[AsCommand(name: 'moonshine:install')]
 class InstallCommand extends MoonShineCommand
 {
     protected $signature = 'moonshine:install {--u|without-user} {--m|without-migrations}';

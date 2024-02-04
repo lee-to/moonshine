@@ -7,8 +7,8 @@ namespace MoonShine\ActionButtons;
 use Closure;
 use MoonShine\Components\MoonShineComponent;
 use MoonShine\Contracts\Actions\ActionButtonContract;
-use MoonShine\DefaultRoutes;
-use MoonShine\Router;
+use MoonShine\Contracts\Resources\ResourceContract;
+use MoonShine\Pages\Page;
 use MoonShine\Support\AlpineJs;
 use MoonShine\Support\Condition;
 use MoonShine\Traits\InDropdownOrLine;
@@ -31,7 +31,11 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
 
     protected bool $isBulk = false;
 
+    protected ?string $bulkForComponent = null;
+
     protected bool $isAsync = false;
+
+    protected ?string $asyncMethod = null;
 
     public function __construct(
         Closure|string $label,
@@ -70,9 +74,19 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
         return $this;
     }
 
-    public function bulk(): self
+    //TODO Make $forComponent parameter required
+    public function bulk(?string $forComponent = null): self
     {
         $this->isBulk = true;
+
+        $this->bulkForComponent = $forComponent;
+
+        if(is_null($this->modal)) {
+            $this->customAttributes([
+                'data-button-type' => 'bulk-button',
+                'data-for-component' => $forComponent,
+            ]);
+        }
 
         return $this;
     }
@@ -80,6 +94,11 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
     public function isBulk(): bool
     {
         return $this->isBulk;
+    }
+
+    public function bulkForComponent(): ?string
+    {
+        return $this->bulkForComponent;
     }
 
     public function getItem(): mixed
@@ -119,9 +138,18 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
         ?string $selector = null,
         array $events = [],
         ?string $callback = null,
-        array $extra = []
+        ?Page $page = null,
+        ?ResourceContract $resource = null,
     ): self {
-        $this->url = DefaultRoutes::getDefaultAsyncMethod(...get_defined_vars());
+        $this->asyncMethod = $method;
+
+        $this->url = moonshineRouter()->asyncMethodClosure(
+            method: $method,
+            message: $message,
+            params: $params,
+            page: $page,
+            resource: $resource,
+        );
 
         return $this->async(
             selector: $selector,
@@ -133,6 +161,16 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
     public function isAsync(): bool
     {
         return $this->isAsync;
+    }
+
+    public function isAsyncMethod(): bool
+    {
+        return ! is_null($this->asyncMethod);
+    }
+
+    public function asyncMethod(): ?string
+    {
+        return $this->asyncMethod;
     }
 
     public function async(
@@ -152,6 +190,28 @@ class ActionButton extends MoonShineComponent implements ActionButtonContract
                 callback: $callback,
             ),
         ])->onClick(fn (): string => 'request', 'prevent');
+    }
+
+    public function purgeAsync(): void
+    {
+        $this->isAsync = false;
+
+        $removeAsyncAttr = array_merge(
+            ['x-data'],
+            array_keys(AlpineJs::asyncUrlDataAttributes(
+                events: ['events'],
+                selector: 'selector',
+                callback: 'callback',
+            ))
+        );
+
+        if($this->attributes->get('x-on:click.prevent') === 'request') {
+            $removeAsyncAttr[] = 'x-on:click.prevent';
+        }
+
+        foreach ($removeAsyncAttr as $name) {
+            $this->removeAttribute($name);
+        }
     }
 
     public function url(mixed $data = null): string

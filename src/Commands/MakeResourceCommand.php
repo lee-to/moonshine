@@ -10,6 +10,9 @@ use function Laravel\Prompts\{info, outro, select, text};
 
 use MoonShine\MoonShine;
 
+use Symfony\Component\Console\Attribute\AsCommand;
+
+#[AsCommand(name: 'moonshine:resource')]
 class MakeResourceCommand extends MoonShineCommand
 {
     protected $signature = 'moonshine:resource {name?} {--m|model=} {--t|title=} {--test} {--pest}';

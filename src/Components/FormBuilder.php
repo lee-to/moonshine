@@ -7,12 +7,12 @@ namespace MoonShine\Components;
 use Closure;
 use Illuminate\View\ComponentAttributeBag;
 use JsonException;
-use MoonShine\DefaultRoutes;
+use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\Enums\JsEvent;
 use MoonShine\Fields\Field;
 use MoonShine\Fields\Fields;
 use MoonShine\Fields\Hidden;
-use MoonShine\Router;
+use MoonShine\Pages\Page;
 use MoonShine\Support\AlpineJs;
 use MoonShine\Traits\Fields\WithAdditionalFields;
 use MoonShine\Traits\HasAsync;
@@ -103,13 +103,18 @@ final class FormBuilder extends RowComponent
         ?string $message = null,
         array $events = [],
         ?string $callback = null,
-        array $extra = [],
+        ?Page $page = null,
+        ?ResourceContract $resource = null,
     ): self {
-        $asyncUrl = DefaultRoutes::getDefaultAsyncMethod(
-            ...get_defined_vars()
+        $asyncUrl = moonshineRouter()->asyncMethod(
+            $method,
+            $message,
+            params: ['resourceItem' => $resource?->getItemID()],
+            page: $page,
+            resource: $resource
         );
 
-        return $this->action(value($asyncUrl))->async(
+        return $this->action($asyncUrl)->async(
             $asyncUrl,
             asyncEvents: $events,
             asyncCallback: $callback
@@ -269,11 +274,16 @@ final class FormBuilder extends RowComponent
         $reactiveFields = $onlyFields->reactiveFields()
             ->mapWithKeys(fn (Field $field): array => [$field->column() => $field->value()]);
 
+        $whenFields = [];
+        foreach ($onlyFields->whenFieldsConditions() as $whenConditions) {
+            foreach ($whenConditions as $value) {
+                $whenFields[] = $value;
+            }
+        }
+
         $xInit = json_encode([
-            'whenFields' => array_values($onlyFields->whenFieldsConditions()->toArray()),
-            'reactiveUrl' => $reactiveFields->isNotEmpty()
-                ? value(DefaultRoutes::getDefaultReactive())
-                : '',
+            'whenFields' => $whenFields,
+            'reactiveUrl' => $reactiveFields->isNotEmpty() ? moonshineRouter()->reactive() : '',
         ], JSON_THROW_ON_ERROR);
 
         $this->customAttributes([
