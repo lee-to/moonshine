@@ -36,7 +36,6 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
     use WithView;
     use WithAssets;
     use HasCanSee;
-    use HasMeta;
     use Conditionable;
 
     protected ?FormElement $parent = null;
@@ -60,20 +59,6 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
     protected ?Closure $requestValueResolver = null;
 
     private View|string|null $cachedRender = null;
-
-    protected static Closure|Request|null $request = null;
-
-    public static function request(Closure|Request $request): void
-    {
-        self::$request = $request;
-    }
-
-    public static function getRequest(): Request
-    {
-        throw_if(is_null(self::$request), new RuntimeException('Set request to FormElement'));
-
-        return value(self::$request);
-    }
 
     protected function afterMake(): void
     {
@@ -158,7 +143,7 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
 
     public function hasRequestValue(string|int|null $index = null): bool
     {
-        return self::getRequest()->has($this->requestNameDot($index));
+        return request()->has($this->requestNameDot($index));
     }
 
     public function requestValueResolver(Closure $resolver): static
@@ -179,7 +164,7 @@ abstract class FormElement implements MoonShineRenderable, HasAssets, CanBeEscap
             ) ?? false;
         }
 
-        return self::getRequest()->get($this->requestNameDot($index), $this->defaultIfExists()) ?? false;
+        return request($this->requestNameDot($index), $this->defaultIfExists()) ?? false;
     }
 
     protected function requestNameDot(string|int|null $index = null): string

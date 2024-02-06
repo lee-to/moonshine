@@ -224,9 +224,7 @@ abstract class Field extends FormElement
 
     public function value(bool $withOld = true): mixed
     {
-        $this->previewMode = false;
-
-        if ($withOld && $old = self::getRequest()->old($this->nameDot())) {
+        if ($withOld && $old = old($this->nameDot())) {
             return $old;
         }
 
